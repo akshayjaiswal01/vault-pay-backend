@@ -75,25 +75,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Apply Migrations
-// Apply Migrations only if pending
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-    if (db.Database.GetPendingMigrations().Any())
-    {
-        db.Database.Migrate();
-    }
-}
-
-
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseCors("AllowNextJs");
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
